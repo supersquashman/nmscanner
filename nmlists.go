@@ -63,6 +63,14 @@ var Item_w_flags=
 "hip","r5","r6","r7","r8","r9","r10","r11","r12","r13",
 };
 
+var Wear_locs=
+[]string{
+"light", "finger1", "finger2", "neck1", "neck2", "body", "head", "legs",
+"feet", "hands", "arms", "shield", "about", "waist", "wrist1", "wrist2",
+"wield", "hold", "dual_wield", "ears", "eyes", "missile_wield", "back",
+"face", "ankle1", "ankle2", "hip",
+};
+
 /* Don't touch r4!!! it is "" for a reason! */
 var Area_flags=
 []string {
@@ -178,14 +186,6 @@ var Cmd_flags =
  "possessed", "polymorphed", "watch", "fullname", "r3", "r4", "r5", "r6", "r7", "r8", 
  "r9", "r10", "r11", "r12", "r13", "r14", "r15", "r16", "r17", "r18", "r19", 
  "r20", "r21", "r22", "r23", "r24", "r25", "r26", "r27", "r28", "r29", "r30",
-};
-
-var Wear_locs=
-[]string{
-"light", "finger1", "finger2", "neck1", "neck2", "body", "head", "legs",
-"feet", "hands", "arms", "shield", "about", "waist", "wrist1", "wrist2",
-"wield", "hold", "dual_wield", "ears", "eyes", "missile_wield", "back",
-"face", "ankle1", "ankle2", "hip",
 };
 
 var Ris_flags=

@@ -19,7 +19,8 @@ func run_item_track(){
 	pathBase := "area"
 	fmt.Println(O_flags[4])
 	loadItemInfo(pathBase)
-	//printItems()
+	printItems(20)
+	printBasicStats()
 	fmt.Println(len(AllItems))
 }
 

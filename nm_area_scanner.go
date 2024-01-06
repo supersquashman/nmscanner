@@ -15,6 +15,7 @@ import (
     "golang.org/x/text/message"
 	//"time"
 	"unicode/utf8"
+	"slices"
 )
 
 var AllItems []Item
@@ -52,8 +53,46 @@ func trimFirstRune(s string) string {
 	return s[i:]
 }
 
+func IS_SET(flag int, bit int) bool{
+	//I hate that this is prevalent enough in smaug code to need to recreate it here just to translate
+	return ((flag) & (bit) == bit)
+}
+
 func SaveItem(theItem Item){
 	AllItems = append(AllItems, theItem)
+	if (slices.Contains(theItem.Flags, "prototype")){
+		ProtoItems = append(ProtoItems, theItem)
+	}else{
+		ReleaseItems = append(ReleaseItems, theItem)
+		switch theItem.Type{
+		case "weapon":
+			Weapons = append(Weapons, theItem)
+		case "armor":
+			Armor = append(Armor, theItem)
+		default:
+			OtherItems = append(OtherItems, theItem)
+		}
+	}
+}
+
+func GetWearLocs(thatNum int)[]string{
+	var wearLocs []string
+	for x:=0;x<32;x++{
+		if (IS_SET(thatNum, 1<<x)){
+			wearLocs = append(wearLocs, W_flags[x])
+		}
+	}
+	return wearLocs
+}
+
+func GetItemFlags(thatNum int)[]string{
+	var itemFlags []string
+	for x:=0;x<32;x++{
+		if (IS_SET(thatNum, 1<<x)){
+			itemFlags = append(itemFlags, O_flags[x])
+		}
+	}
+	return itemFlags
 }
 
 func nmsplitter(line string, callSize int) []int {
@@ -63,7 +102,7 @@ func nmsplitter(line string, callSize int) []int {
 	spraySize := max(callSize, len(line))
 	parsedArray := make([]int, spraySize)
 	var err error
-	tempSpray := strings.Split(line,"'")
+	tempSpray := strings.Split(line," ")
 	for indx, val := range tempSpray{
 		parsedArray[indx],err = strconv.Atoi(val)
 	}
@@ -141,15 +180,11 @@ func loadItemInfo(currentPath string){
 								currentItem.ActionDesc=itemReader.Text()
 								itemLine++
 							case 4: //[type,flags,wearflags, optional:layers]
-								tempLine := strings.Split(itemReader.Text(),"")
-								//currentItem.Type,erri = strconv.Atoi(tempLine[0])
-								//currentItem.Flags,erri = strconv.Atoi(tempLine[1])
-								//currentItem.WearLocs,erri = strconv.Atoi(tempLine[2])
-								if(len(tempLine)>3){
-									currentItem.Layer,erri = strconv.Atoi(tempLine[3])
-								}else{
-									currentItem.Layer = 0
-								}
+								tempLine := nmsplitter(itemReader.Text(),4)
+								currentItem.Type = O_types[tempLine[0]]
+								currentItem.Flags = GetItemFlags(tempLine[1])
+								currentItem.WearLocs = GetWearLocs(tempLine[2])
+								currentItem.Layer = tempLine[3]
 								itemLine++
 							case 5: //values
 								//currentItem.Name=itemReader.Text()
@@ -205,25 +240,64 @@ func loadItemInfo(currentPath string){
 	})
 }
 
-func printItems(){
-	
+func printBasicStats(){
+	p := message.NewPrinter(language.English)
+
+	reportStr := "All items: %v\nReleased Items: %v\nProto Items: %v\nWeapons: %v\nArmor: %v\nAll other items: %v"
+	report := p.Sprintf(reportStr,
+			len(AllItems),
+			len(ReleaseItems),
+			len(ProtoItems),
+			len(Weapons),
+			len(Armor),
+			len(OtherItems))
+	fmt.Println(report)
+}
+
+func printItems(numToPrint int){
 	p := message.NewPrinter(language.English)
 	//sortSkillsByUse()
 
-	for i:=0; i<len(AllItems); i++{
+	for i:=0; i<numToPrint; i++{
 		displayItem := AllItems[i]
-		//reportStr := "%v: %v vnum\tName\nMist\tStone\tSand\tSound\tCloud\n%v\t%v\t%v\t%v\t%v\t%v"
 		reportStr := "vnum: %v\t->Upgrade_Vnum: %v\nName: %v\nShort Description: %v\nLong Description:%v"
-		reportStr += "\nCost/FixedCost: %v/%v"
+		reportStr += "\nType:%v\tCost/FixedCost: %v/%v\nWear Locs:%v\nFlags:%v\nArea File:%v"
 		report := p.Sprintf(reportStr,
 				displayItem.Vnum,
 				displayItem.UpgradeVnum,
 				displayItem.Name,
 				displayItem.ShortDesc,
 				displayItem.LongDesc,
+				displayItem.Type,
 				displayItem.Cost,
-				displayItem.FixedCost)
+				displayItem.FixedCost,
+				displayItem.WearLocs,
+				displayItem.Flags,
+				displayItem.AreaOrigin)
 		fmt.Println(report)
 	}
 }
 
+func printAllItems(){
+	printItems(len(AllItems))
+}
+
+func writeItemsToFiles(){
+
+}
+
+func writeAllItemsFile(){
+
+}
+
+func writeWeaponsFile(){
+
+}
+
+func writeArmorFile(){
+
+}
+
+func writeOtherItemsFile(){
+	
+}
