@@ -16,6 +16,7 @@ import (
 	//"time"
 	"unicode/utf8"
 	"slices"
+	"encoding/json"
 )
 
 var AllItems []Item
@@ -26,24 +27,24 @@ var Armor []Item
 var OtherItems []Item
 
 type Item struct{
-	Vnum int
-	UpgradeVnum int
-	Name string
-	Type string
-	Layer int
-	Cost int
-	FixedCost int
-	Weight int
-	LevelReq int
-	LegacyLevelReq int
-	Flags []string
-	ShortDesc string
-	LongDesc string
-	WearLocs []string
-	Affects []string
-	Values []int
-	AreaOrigin string
-	ActionDesc string
+	Vnum int `json:"vnum"`
+	UpgradeVnum int `json:"upgrade_vnum"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+	Layer int `json:"layer"`
+	Cost int `json:"cost"`
+	FixedCost int `json:"fixed_cost"`
+	Weight int `json:"weight"`
+	LevelReq int `json:"level_req"`
+	LegacyLevelReq int `json:"legacy_level_req"`
+	Flags []string `json:"flags"`
+	ShortDesc string `json:"short_desc"`
+	LongDesc string `json:"long_desc"`
+	WearLocs []string `json:"wear_locs"`
+	Affects []string `json:"affects"`
+	Values []int `json:"values"`
+	AreaOrigin string `json:"area_origin"`
+	ActionDesc string `json:"action_desc"`
 }
 
 
@@ -282,12 +283,22 @@ func printAllItems(){
 	printItems(len(AllItems))
 }
 
-func writeItemsToFiles(){
+func writeItemsToFilesFullSep(){
 
 }
 
 func writeAllItemsFile(){
+	jsonAllItems, _ := json.MarshalIndent(AllItems, ""," ")
+	filename := "AllItems.json"
+    destination, err := os.Create(filename)
+    if err != nil {
+        fmt.Println("os.Create:", err)
+        return
+    }
+    defer destination.Close()
 
+    fmt.Fprintf(destination, "%s\n", jsonAllItems)
+    //fmt.Fprintf(destination, "Using fmt.Fprintf in %s\n", filename)
 }
 
 func writeWeaponsFile(){
@@ -299,5 +310,5 @@ func writeArmorFile(){
 }
 
 func writeOtherItemsFile(){
-	
+
 }

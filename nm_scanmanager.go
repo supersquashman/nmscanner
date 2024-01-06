@@ -22,6 +22,7 @@ func run_item_track(){
 	printItems(20)
 	printBasicStats()
 	fmt.Println(len(AllItems))
+	writeAllItemsFile()
 }
 
 func main(){
