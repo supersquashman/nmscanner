@@ -1,5 +1,5 @@
 package main
-
+/*
 import (
     "bufio"
     "fmt"
@@ -119,11 +119,8 @@ func loadPlayers(currentPath string){
 			players = append(players, tempPlayer)
 
 			if erri != nil {err = erri}
-		}/*else if di.IsDir(){
-			info, erri := di.Info()
-				loadPlayers(currentPath+"/"+info.Name())
-			if erri != nil {err = erri}
-		}*/
+		}
 		return err
 	})
 }
+*/ 

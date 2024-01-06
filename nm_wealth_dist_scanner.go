@@ -352,13 +352,4 @@ func CurrentUserJutsuUsageData(){
 	}
 }
 
-func main(){
-	skillTracker = make(map[string]Jutsu)
-	currentPlayerSkillTracker = make(map[string]Jutsu)
-	pathBase := "player"
-	determineActivePlayers(pathBase, HowFarBackWeGo)
-	loadPlayers(pathBase)
-	//checkFinances()
-	//JutsuUsageData()
-	CurrentUserJutsuUsageData()
-}	
+
