@@ -17,6 +17,7 @@ import (
 	"unicode/utf8"
 	"slices"
 	"encoding/json"
+	"math"
 )
 
 var AllItems []Item
@@ -84,7 +85,7 @@ func SaveItem(theItem Item){
 
 func GetWearLocs(thatNum int)[]string{
 	var wearLocs []string
-	for x:=0;x<32;x++{
+	for x:=0;x<len(W_flags);x++{
 		if (IS_SET(thatNum, 1<<x)){
 			wearLocs = append(wearLocs, W_flags[x])
 		}
@@ -94,7 +95,7 @@ func GetWearLocs(thatNum int)[]string{
 
 func GetItemFlags(thatNum int)[]string{
 	var itemFlags []string
-	for x:=0;x<32;x++{
+	for x:=0;x<len(O_flags);x++{
 		if (IS_SET(thatNum, 1<<x)){
 			itemFlags = append(itemFlags, O_flags[x])
 		}
@@ -111,7 +112,17 @@ func nmsplitter(line string, callSize int) []int {
 	var err error
 	tempSpray := strings.Split(line," ")
 	for indx, val := range tempSpray{
-		parsedArray[indx],err = strconv.Atoi(val)
+		if(strings.Contains(val, "&")){
+			bitSplit := strings.Split(val, "&")
+			leftBtv, _ := strconv.Atoi(bitSplit[0])
+			rightBtv, _ := strconv.Atoi(bitSplit[1])
+			realVal := (rightBtv * int(math.Pow(2, 32))) + leftBtv 
+			fmt.Println("'RealVal': "+strconv.Itoa(realVal))
+			fmt.Println(realVal)
+			parsedArray[indx] = realVal
+		}else{
+			parsedArray[indx],err = strconv.Atoi(val)
+		}
 	}
 	if(err!=nil){}
 	return parsedArray
@@ -192,6 +203,9 @@ func loadItemInfo(currentPath string){
 								if (slices.Contains(RetiredLimitedImmItems, tempLine[0])){
 									currentItem.Type = "Restricted-"+currentItem.Type
 								}
+								if (tempLine[1]>0){
+								fmt.Println("Vnum: "+ strconv.Itoa(currentItem.Vnum))
+								fmt.Println("Flag btvct: "+strconv.Itoa(tempLine[1]))}
 								currentItem.Flags = GetItemFlags(tempLine[1])
 								currentItem.WearLocs = GetWearLocs(tempLine[2])
 								currentItem.Layer = tempLine[3]
