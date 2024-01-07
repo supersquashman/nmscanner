@@ -25,6 +25,7 @@ var ProtoItems []Item
 var Weapons []Item
 var Armor []Item
 var OtherItems []Item
+var RetiredLimitedImmItems = []int{284,2550,1815}
 
 type Item struct{
 	Vnum int `json:"vnum"`
@@ -41,10 +42,15 @@ type Item struct{
 	ShortDesc string `json:"short_desc"`
 	LongDesc string `json:"long_desc"`
 	WearLocs []string `json:"wear_locs"`
-	Affects []string `json:"affects"`
+	Affects []ItemAffect `json:"affects"`
 	Values []int `json:"values"`
 	AreaOrigin string `json:"area_origin"`
 	ActionDesc string `json:"action_desc"`
+}
+
+type ItemAffect struct{
+	AffectName string `json:"ItemAffectName"`
+	AffectVal int	`json:"ItemAffectValue"`
 }
 
 
@@ -183,6 +189,9 @@ func loadItemInfo(currentPath string){
 							case 4: //[type,flags,wearflags, optional:layers]
 								tempLine := nmsplitter(itemReader.Text(),4)
 								currentItem.Type = O_types[tempLine[0]]
+								if (slices.Contains(RetiredLimitedImmItems, tempLine[0])){
+									currentItem.Type = "Restricted-"+currentItem.Type
+								}
 								currentItem.Flags = GetItemFlags(tempLine[1])
 								currentItem.WearLocs = GetWearLocs(tempLine[2])
 								currentItem.Layer = tempLine[3]
@@ -210,9 +219,16 @@ func loadItemInfo(currentPath string){
 								currentItem.UpgradeVnum = tempLine[0]
 								currentItem.Weight = tempLine[1]
 								itemLine++
-							case 8:
-								//currentItem.Name=itemReader.Text()
-								itemLine++
+							case 8: //Affects
+								if(itemReader.Text() == "A"){
+									itemReader.Scan()
+									tempLine := nmsplitter(itemReader.Text(), 2)
+									var tempAffect ItemAffect
+									tempAffect.AffectName = A_types[tempLine[0]]
+									tempAffect.AffectVal = tempLine[1] 
+									currentItem.Affects = append(currentItem.Affects, tempAffect)
+								}
+								//itemLine++
 							case 9:
 								//currentItem.Name=itemReader.Text()
 								itemLine++
