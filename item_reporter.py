@@ -17,6 +17,26 @@ class ItemReporter:
     def get_random_color(self, dumpvar):
         return "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
     
+    def graph_aggregate_weapon_data(self):
+        weapon_df = self.all_items_df.loc[self.all_items_df["type"].str.contains('weapon')].reset_index()
+        has_flags_df = weapon_df.loc[weapon_df["flags"].notna(), ["vnum","flags"]]
+        #print(weapon_df[["vnum","cost","level_req "]].to_string())
+        #weapons per area
+        #weapons with upgrades
+        #weapons that -are- upgrades
+        #legendary weapons (possibly with legendaries that aren't upgrades colored diff)
+        #weapons that have affects
+        #weapons that can bind
+
+
+        #weapons with level limits
+        level_limit_count = self.all_items_df.loc[self.all_items_df["level_req"].ge(1)]["vnum"].count()
+        
+        #find the number of items that have bind flags
+        bind_mask = has_flags_df["flags"].apply(lambda fray: "binding" in fray)
+        bind_count = has_flags_df[bind_mask]["vnum"].count()
+        print(f"Bind Counter: {bind_count}")
+    
     def graph_weapon_damages(self):
         #max_weapon_damage = 0
         weapons = {}
@@ -77,4 +97,5 @@ class ItemReporter:
 
 
 reporter = ItemReporter()
-reporter.graph_weapon_damages()
+#reporter.graph_weapon_damages()
+reporter.graph_aggregate_weapon_data()
