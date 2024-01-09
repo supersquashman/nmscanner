@@ -156,7 +156,7 @@ func loadItemInfo(currentPath string){
 			for itemReader.Scan() {
 				if (strings.Contains(itemReader.Text(),"#OBJECTS")){
 					readingObjects = true
-					itemReader.Scan()
+					//itemReader.Scan()
 					//newVnum, err = strconv.Atoi(trimFirstRune(itemReader.Text()))
 				}else if (strings.Contains(itemReader.Text(),"#ROOMS")){
 					readingObjects = false
@@ -174,7 +174,9 @@ func loadItemInfo(currentPath string){
 							//fmt.Println(itemReader.Text())
 							newVnum, err = strconv.Atoi(trimFirstRune(itemReader.Text()))
 							//sameObject = false
-							SaveItem(currentItem)
+							if (currentItem.Vnum != 0){
+								SaveItem(currentItem)
+							}
 							var tempItem Item
 							tempItem.Vnum = newVnum
 							tempItem.AreaOrigin = areaName
