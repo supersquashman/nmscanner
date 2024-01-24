@@ -30,7 +30,9 @@ class ItemReporter:
 
 
         #weapons with level limits
+        #print(self.all_items_df.loc[self.all_items_df["level_req"].ge(1)], ["vnum","level_req"])
         level_limit_count = self.all_items_df.loc[self.all_items_df["level_req"].ge(1)]["vnum"].count()
+        print(f"Level Limits: {level_limit_count}")
         
         #find the number of items that have bind flags
         bind_mask = has_flags_df["flags"].apply(lambda fray: "binding" in fray)
