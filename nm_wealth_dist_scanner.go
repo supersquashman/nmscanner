@@ -17,7 +17,7 @@ import (
 )
 
 
-var players []Player
+var Players []Player
 var currentPlayers []string
 
 var VillageLookup = []string{"Leaf","Sand","Stone","Mist","Sound","Cloud"}
@@ -38,6 +38,8 @@ type Player struct{
 	CurrentLevel int
 	OverallLevel int `default:"0"`
 	Village string
+	LogoutRoom int
+	PlayedTime int
 }
 
 type Jutsu struct{
@@ -50,7 +52,7 @@ type Jutsu struct{
 	TotalCount int `default:"0"`
 }
 
-func determineActivePlayers(currentPath string, timeframe int){
+func DetermineActivePlayers(currentPath string, timeframe int){
 	currentTime := time.Now()
 	cutoff := currentTime.AddDate(0,(timeframe*-1),0).Unix()
 
@@ -98,7 +100,7 @@ func isCurrentPlayer(playerName string) bool{
 	return false
 }
 
-func loadPlayers(currentPath string){
+func LoadPlayers(currentPath string){
 	filepath.WalkDir(currentPath, func (Fpath string, di fs.DirEntry, err error) error {
 		if !di.IsDir(){
 			var tempPlayer Player
@@ -148,6 +150,19 @@ func loadPlayers(currentPath string){
 						tempPlayer.OverallLevel += tempPlayer.Legacy*300
 					}
 				}
+				if strings.Contains(playerReader.Text(),"Room"){
+					roomFields := strings.Fields(playerReader.Text())
+					if roomFields[0]=="Room"{
+						tempPlayer.LogoutRoom, err = strconv.Atoi(roomFields[1])
+					}
+				}
+				if strings.Contains(playerReader.Text(),"Played"){
+					timePlayedFields := strings.Fields(playerReader.Text())
+					if timePlayedFields[0]=="Played"{
+						tempPlayer.PlayedTime, err = strconv.Atoi(timePlayedFields[1])
+					}
+				}
+				
 				if strings.Contains(playerReader.Text(), "Skill"){
 					skillFields := strings.Fields(playerReader.Text())
 					if skillFields[0]=="Skill"{
@@ -198,7 +213,7 @@ func loadPlayers(currentPath string){
 
 			tempPlayer.AllMoney = tempPlayer.Bank + tempPlayer.Wallet
 
-			players = append(players, tempPlayer)
+			Players = append(Players, tempPlayer)
 
 			if erri != nil {err = erri}
 		}/*else if di.IsDir(){
@@ -211,8 +226,8 @@ func loadPlayers(currentPath string){
 }
 
 func sortPlayersByWealth(){
-	sort.Slice(players, func(i, j int) bool {
-		return players[i].AllMoney > players[j].AllMoney
+	sort.Slice(Players, func(i, j int) bool {
+		return Players[i].AllMoney > Players[j].AllMoney
 	  })
 }
 
@@ -248,10 +263,10 @@ func dirTest(currentPath string){
 	})
 }
 
-func checkFinances(){
+func CheckFinances(){
 	sortPlayersByWealth()
 	var applicablePlayers = 0
-	var totalPlayers = len(players)
+	var totalPlayers = len(Players)
 	var totalRyo = 0
 	var applicableTotalRyo = 0
 
@@ -259,7 +274,7 @@ func checkFinances(){
 	var legacyPlayerWealth = 0
 	var displayKey = "+_+ = Can Buy a House\n ** = Has used Legacy at least once"
 
-	for _, plyr := range players{
+	for _, plyr := range Players{
 		if plyr.AllMoney >= 50{
 			applicablePlayers++
 			applicableTotalRyo += plyr.AllMoney
@@ -274,19 +289,19 @@ func checkFinances(){
 	 p := message.NewPrinter(language.English)
 
 	for i:=0; i<applicablePlayers/10; i++{
-		displayName := players[i].Name
-		if players[i].Legacy > 0{
+		displayName := Players[i].Name
+		if Players[i].Legacy > 0{
 			displayName = "**"+displayName+"**"
 		}
-		if players[i].AllMoney > 100000{
+		if Players[i].AllMoney > 100000{
 			displayName = "+_+"+displayName+"+_+"
 		}
 		theLine := p.Sprintf("%v.) %v: %v ryo total\n(Wallet: %v ryo;  Bank: %v ryo)", 
 			i+1, 
 			displayName, 
-			number.Decimal(players[i].AllMoney), 
-			number.Decimal(players[i].Wallet), 
-			number.Decimal(players[i].Bank))
+			number.Decimal(Players[i].AllMoney), 
+			number.Decimal(Players[i].Wallet), 
+			number.Decimal(Players[i].Bank))
 		fmt.Println(theLine)
 	}
 	reportStr := "Total players: %v\nPlayers counted (>= 50 ryo): %v\nTotal ryo counted: %v\n(Total Ryo not counted: %v)\nAveraged Wealth:%v"

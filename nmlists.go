@@ -107,8 +107,9 @@ var A_types=
 "stripsn", "remove", "dig", "full", "thirst", "drunk", "blood", "cook",
 "recurringspell", "contagious", "xaffected", "odor", "roomflag", "sectortype",
 "roomlight", "televnum", "teledelay", "drain", "navigation", "houkou",
-"meiki", "chouraku", "onibi", "futsuriai", "meiun_hippaku", "bunshin",
-"kushin_katsu", "wabigoe", "death_timer", "buff",
+"meiki", "chouraku", "onibi", "futsuriai", "kukyo_kogeki", "meiun_hippaku", "bunshin",
+"kushin_katsu", "wabigoe", "death_timer", "buff", "element_fire",
+"element_water", "element_wind", "element_earth", "element_lightning",
 };
 
 var A_flags=
@@ -143,7 +144,7 @@ var Act_flags=
 "undertaker", "combo", "corpseclone", "powerstruggle", "in_prog", "dai",
 "leap", "ignoretactic", "shunshin", "raider", "raidboss", "mission",
 "noexp", "lightningclone", "nomission", "nohistorybonus", "raidhalloween",
-"raidexpexempt", "raiduber", "raidhostage",
+"raidexpexempt", "raiduber", "raidhostage", "hospitalpatient", "supportninja",
 };
 
 var Pc_flags=
@@ -171,6 +172,7 @@ var Plr_flags=
 "mip", "automap", "localecho", "combo", "rpon", "powerstruggle",
 "override_save", "noemail", "dai", "leap", "ignoretactic", "256color",
 "shunshin", "autodroploot", "clonefail", "autodoor", "clonedetails",
+"onlyryoreward", "consolidatesacall",
 };
 
 var Trap_flags=

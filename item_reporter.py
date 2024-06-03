@@ -22,11 +22,39 @@ class ItemReporter:
         has_flags_df = weapon_df.loc[weapon_df["flags"].notna(), ["vnum","flags"]]
         #print(weapon_df[["vnum","cost","level_req "]].to_string())
         #weapons per area
+        
         #weapons with upgrades
+        can_upgrade_mask = self.all_items_df["upgrade_vnum"].ge(1)
+        upgradeable_vnums = self.all_items_df.loc[can_upgrade_mask]["vnum"]
+        upgrade_vnums = self.all_items_df.loc[can_upgrade_mask].reset_index()["upgrade_vnum"]
+        upgradeable_counter = upgradeable_vnums.count()
+        print (upgrade_vnums)
+        print(f"Number of Upgradeable Weapons: {upgradeable_counter}")
+
         #weapons that -are- upgrades
-        #legendary weapons (possibly with legendaries that aren't upgrades colored diff)
+        is_upgrade_mask = self.all_items_df["vnum"].apply(lambda vnum: vnum in upgrade_vnums)
+        #is_upgrade_mask = self.all_items_df["vnum"].isin(upgrade_vnums)
+        are_upgrades_counter = self.all_items_df.loc[is_upgrade_mask]["vnum"].count()
+        print(f"Items that are upgrades: {are_upgrades_counter}")
+
+        #final_upgrades_count = self.all_items_df.loc[self.all_items_df]
+        #final_upgrade_item_mask = self.all_items_df[["vnum","upgrade_vnum"]].apply(lambda vnum, upgrade_vnum: vnum in upgrade_vnums and upgrade_vnum == 0)
+        #final_upgrade_item_list = self.all_items_df[is_upgrade_mask].isin(~upgradeable_vnums)
+        
+        #final_upgrade_item_list = self.all_items_df[is_upgrade_mask]
+        final_upgrade_item_list = self.all_items_df.loc[self.all_items_df["vnum"].isin(upgrade_vnums)]
+        final_upgrade_item_list = final_upgrade_item_list.loc[final_upgrade_item_list["upgrade_vnum"].apply(lambda upgrade_vnum: upgrade_vnum == 0)]
+        final_upgrade_item_count = final_upgrade_item_list["vnum"].count()
+        print(f"Final Upgrade Count: {final_upgrade_item_count}")
+        print(final_upgrade_item_list[["vnum","short_desc"]].to_string())
+        
+        #legendary weapons (possibly with legendaries that aren't upgrades colored diff) 
+
+
         #weapons that have affects
-        #weapons that can bind
+        weapons_with_affects = self.all_items_df.loc[self.all_items_df["affects"].notna()]
+        weapons_with_affects_count = weapons_with_affects["vnum"].count()
+        print(f"Weapons with affects count: {weapons_with_affects_count}")
 
 
         #weapons with level limits

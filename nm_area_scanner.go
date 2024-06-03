@@ -27,6 +27,15 @@ var Weapons []Item
 var Armor []Item
 var OtherItems []Item
 var RetiredLimitedImmItems = []int{284,2550,1815}
+var AreasList []AreaInfo
+
+type AreaInfo struct{
+	Name string
+	Filename string
+	Prototype bool
+	Low_Vnum int
+	High_Vnum int
+}
 
 type Item struct{
 	Vnum int `json:"vnum"`
@@ -128,7 +137,163 @@ func nmsplitter(line string, callSize int) []int {
 	return parsedArray
 }
 
-func loadItemInfo(currentPath string){
+LodaAreaMapInfo(currentPath string){
+	filepath.WalkDir(currentPath, func (Fpath string, di fs.DirEntry, err error) error {
+		if !di.IsDir() && !strings.Contains(di.Name(),".bak") && strings.Contains(di.Name(), ".are") {
+			
+			//var tempPlayer Player
+			newVnum := 0
+			info, err := di.Info()
+			var erri error
+			fmt.Println("Opening file: "+info.Name())
+			areaName := info.Name()
+			//isCurrent := isCurrentPlayer(tempPlayer.Name)
+			readingRooms := false
+			var currentRoom RoomData
+
+			
+
+			areaFile, err := os.Open(Fpath)
+			if err != nil {
+				log.Fatalf("Error opening file: %v", err)
+			}
+			defer areaFile.Close()
+
+			// Read the file content
+			//content, err := ioutil.ReadAll(areaFile)
+			itemReader := bufio.NewScanner(areaFile)
+			itemReader.Split(bufio.ScanLines)
+  
+			for itemReader.Scan() {
+				if (strings.Contains(itemReader.Text(),"#OBJECTS")){
+					readingRooms = false
+					//itemReader.Scan()
+					//newVnum, err = strconv.Atoi(trimFirstRune(itemReader.Text()))
+				}else if (strings.Contains(itemReader.Text(),"#ROOMS")){
+					readingRooms = true
+				}
+
+				//sameObject := true
+				itemLine := 0
+				 
+
+				for (readingRooms){
+					itemReader.Scan()
+					//currentVnum = newVnum
+					//for (sameObject){
+						if (strings.Contains(itemReader.Text(),"#") && !strings.Contains(itemReader.Text(),"#OBJECTS")){
+							//fmt.Println(itemReader.Text())
+							newVnum, err = strconv.Atoi(trimFirstRune(itemReader.Text()))
+							//sameObject = false
+							if (currentItem.Vnum != 0){
+								SaveItem(currentItem)
+							}
+							var tempItem Item
+							tempItem.Vnum = newVnum
+							tempItem.AreaOrigin = areaName
+							currentItem = tempItem
+							itemLine=0
+						}else if(strings.Contains(itemReader.Text(),"#OBJECTS")){
+							readingRooms=false
+						}else{
+							switch itemLine{
+							case 0:
+								currentItem.Name=itemReader.Text()
+								itemLine++
+							case 1:
+								//fmt.Println(itemReader.Text())
+								currentItem.ShortDesc=itemReader.Text()
+								itemLine++
+							case 2:
+								currentItem.LongDesc=itemReader.Text()
+								itemLine++
+							case 3:
+								currentItem.ActionDesc=itemReader.Text()
+								itemLine++
+							case 4: //[type,flags,wearflags, optional:layers]
+								tempLine := nmsplitter(itemReader.Text(),4)
+								currentItem.Type = O_types[tempLine[0]]
+								if (slices.Contains(RetiredLimitedImmItems, tempLine[0])){
+									currentItem.Type = "Restricted-"+currentItem.Type
+								}
+								if (tempLine[1]>0){
+								fmt.Println("Vnum: "+ strconv.Itoa(currentItem.Vnum))
+								fmt.Println("Flag btvct: "+strconv.Itoa(tempLine[1]))}
+								currentItem.Flags = GetItemFlags(tempLine[1])
+								currentItem.WearLocs = GetWearLocs(tempLine[2])
+								currentItem.Layer = tempLine[3]
+								itemLine++
+							case 5: //values
+								//currentItem.Name=itemReader.Text()
+								value0,value1,value2,value3,value4 := 0,0,0,0,0
+								tempLine := nmsplitter(itemReader.Text(), 5)
+								value0 = tempLine[0]
+								value1 = tempLine[1]
+								value2 = tempLine[2]
+								value3 = tempLine[3]
+								value4 = tempLine[4]
+								currentItem.Values = append(currentItem.Values,value0,value1,value2,value3,value4)
+								itemLine++
+							case 6: //[cost, fixedcost, level, legacylevel]
+								tempLine := nmsplitter(itemReader.Text(), 4)
+								currentItem.Cost = tempLine[0]
+								currentItem.FixedCost = tempLine[1]
+								currentItem.LevelReq = tempLine[2]
+								currentItem.LegacyLevelReq = tempLine[3]
+								itemLine++
+							case 7: //[upgradeVnum, weight]
+								tempLine := nmsplitter(itemReader.Text(), 2)
+								currentItem.UpgradeVnum = tempLine[0]
+								currentItem.Weight = tempLine[1]
+								itemLine++
+							case 8: //Affects
+								if(itemReader.Text() == "A"){
+									itemReader.Scan()
+									tempLine := nmsplitter(itemReader.Text(), 2)
+									var tempAffect ItemAffect
+									tempAffect.AffectName = A_types[tempLine[0]]
+									tempAffect.AffectVal = tempLine[1] 
+									currentItem.Affects = append(currentItem.Affects, tempAffect)
+								}
+								//itemLine++
+							case 9:
+								//currentItem.Name=itemReader.Text()
+								itemLine++
+							case 10:
+								//currentItem.Name=itemReader.Text()
+								itemLine++
+							default:
+								//fmt.Println(itemReader.Text())
+								itemLine++
+							}
+						}
+						if tempArea.Low_Vnum > newVnum{
+							tempArea.Low_Vnum = newVnum
+						}
+						if tempArea.High_Vnum < newVnum{
+							tempArea.High_Vnum = newVnum
+						}
+						//itemReader.Scan()
+					//}
+				}
+			}
+		//fmt.Println(itemReader.Text())
+
+		//AreasList = append(AreasList, tempArea)
+		
+		AddRoomToAreaMap(currentRoom)
+		areaFile.Close()
+		if erri != nil {err = erri}
+		}/*else if di.IsDir(){
+			info, erri := di.Info()
+				loadPlayers(currentPath+"/"+info.Name())
+			if erri != nil {err = erri}
+		}*/
+		return err
+	})
+}
+
+func LoadItemInfo(currentPath string){
 	filepath.WalkDir(currentPath, func (Fpath string, di fs.DirEntry, err error) error {
 		if !di.IsDir() && !strings.Contains(di.Name(),".bak") && strings.Contains(di.Name(), ".are") {
 			
@@ -141,6 +306,11 @@ func loadItemInfo(currentPath string){
 			//isCurrent := isCurrentPlayer(tempPlayer.Name)
 			readingObjects := false
 			var currentItem Item
+
+			var tempArea AreaInfo
+			tempArea.Filename = areaName
+			tempArea.Low_Vnum = 100000000
+			tempArea.High_Vnum = 0
 
 			areaFile, err := os.Open(Fpath)
 			if err != nil {
@@ -256,11 +426,19 @@ func loadItemInfo(currentPath string){
 								itemLine++
 							}
 						}
+						if tempArea.Low_Vnum > newVnum{
+							tempArea.Low_Vnum = newVnum
+						}
+						if tempArea.High_Vnum < newVnum{
+							tempArea.High_Vnum = newVnum
+						}
 						//itemReader.Scan()
 					//}
 				}
 			}
 		//fmt.Println(itemReader.Text())
+
+		AreasList = append(AreasList, tempArea)
 
 		areaFile.Close()
 		if erri != nil {err = erri}
@@ -273,7 +451,7 @@ func loadItemInfo(currentPath string){
 	})
 }
 
-func printBasicStats(){
+func PrintBasicStats(){
 	p := message.NewPrinter(language.English)
 
 	reportStr := "All items: %v\nReleased Items: %v\nProto Items: %v\nWeapons: %v\nArmor: %v\nAll other items: %v"
@@ -287,7 +465,7 @@ func printBasicStats(){
 	fmt.Println(report)
 }
 
-func printItems(numToPrint int){
+func PrintItems(numToPrint int){
 	p := message.NewPrinter(language.English)
 	//sortSkillsByUse()
 
@@ -311,15 +489,15 @@ func printItems(numToPrint int){
 	}
 }
 
-func printAllItems(){
-	printItems(len(AllItems))
+func PrintAllItems(){
+	PrintItems(len(AllItems))
 }
 
-func writeItemsToFilesFullSep(){
+func WriteItemsToFilesFullSep(){
 
 }
 
-func writeAllItemsFile(){
+func WriteAllItemsFile(){
 	jsonAllItems, _ := json.MarshalIndent(AllItems, ""," ")
 	filename := "AllItems.json"
     destination, err := os.Create(filename)
@@ -333,14 +511,14 @@ func writeAllItemsFile(){
     //fmt.Fprintf(destination, "Using fmt.Fprintf in %s\n", filename)
 }
 
-func writeWeaponsFile(){
+func WriteWeaponsFile(){
 
 }
 
-func writeArmorFile(){
+func WriteArmorFile(){
 
 }
 
-func writeOtherItemsFile(){
+func WriteOtherItemsFile(){
 
 }
